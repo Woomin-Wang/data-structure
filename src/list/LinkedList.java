@@ -87,7 +87,6 @@ public class LinkedList<E> implements List<E> {
         prevNode.next = x.next;
         x.item = null;
         x.next = null;
-
         size--;
         return removedValue;
     }
@@ -98,20 +97,26 @@ public class LinkedList<E> implements List<E> {
         }
     }
 
-    private Node<E> getLastNode() {
-        Node<E> f = first;
-        while (f.next != null) {
-            f = f.next;
+    private void checkElementIndex(int index) {
+        if (index < 0 || index >= size) {
+            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
-        return f;
+    }
+
+    private Node<E> getLastNode() {
+        Node<E> x = first;
+        while (x.next != null) {
+            x = x.next;
+        }
+        return x;
     }
 
     public Node<E> getNode(int index) {
-        Node<E> f = first;
+        Node<E> x = first;
         for (int i = 0; i < index; i++) {
-            f = f.next;
+            x = x.next;
         }
-        return f;
+        return x;
     }
 
     @Override
@@ -121,17 +126,29 @@ public class LinkedList<E> implements List<E> {
 
     @Override
     public void add(int index, E e) {
-        linkBefore(e, index);
+        checkPositionIndex(index);
+
+        if(index == size) {
+            linkLast(e);
+        } else if (index == 0) {
+            linkFirst(e);
+        } else {
+            linkBefore(e, index);
+        }
     }
 
     @Override
     public E get(int index) {
+        checkElementIndex(index);
+
         Node<E> node = getNode(index);
         return node.item;
     }
 
     @Override
     public E set(int index, E e) {
+        checkElementIndex(index);
+
         Node<E> node = getNode(index);
         E oldValue = node.item;
         node.item = e;
@@ -140,7 +157,7 @@ public class LinkedList<E> implements List<E> {
 
     @Override
     public E remove(int index) {
-        checkPositionIndex(index);
+        checkElementIndex(index);
 
         if(index == 0) {
             return unlinkFirst();

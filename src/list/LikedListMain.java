@@ -24,6 +24,5 @@ public class LikedListMain {
 
         int index = list.indexOf("유재영");
         System.out.println("유재영의 index = " + index);
-
     }
 }

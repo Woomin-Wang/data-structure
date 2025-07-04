@@ -3,6 +3,7 @@ package list;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Objects;
 
 public class ArrayList<E> implements List<E> {
 
@@ -87,7 +88,8 @@ public class ArrayList<E> implements List<E> {
     @Override
     public int indexOf(Object o) {
         for (int i = 0; i < size; i++) {
-            if (o.equals(elementData[i])) return i;
+            if (Objects.equals(o, elementData[i]))
+                return i;
         }
         return -1;
     }
