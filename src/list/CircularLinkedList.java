@@ -5,15 +5,18 @@ import java.util.Objects;
 public class CircularLinkedList<E> implements List<E> {
 
     private Node<E> first;
+    private Node<E> tail;
     private int size;
 
     private static class Node<E> {
         E item;
         Node<E> next;
+        Node<E> prev;
 
-        Node(E element, Node<E> next) {
+        Node(Node<E> prev, E element, Node<E> next) {
             this.item = element;
             this.next = next;
+            this.prev = prev;
         }
     }
 
@@ -35,7 +38,18 @@ public class CircularLinkedList<E> implements List<E> {
 
     @Override
     public void add(E e) {
-        add(size, e);
+        final Node<E> l = tail;
+        final Node<E> newNode = new Node<>(l, e, first); // 원형 만들어줌
+        tail = newNode;
+        if (l == null) {
+            first = newNode;
+            newNode.next = first;
+            newNode.prev = first;
+        } else {
+            l.next = newNode; // 이전 tail의 next가 newNode
+            first.prev = newNode;  // 원형 구조 만들어줌
+        }
+        size++;
     }
 
     @Override
@@ -44,22 +58,22 @@ public class CircularLinkedList<E> implements List<E> {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
 
-        if (index == 0) {
-            if (first == null) { // Empty list
-                first = new Node<>(element, null);
-                first.next = first; // Points to itself
-            } else { // Non-empty list, add at the beginning
-                Node<E> last = getNode(size - 1);
-                Node<E> newNode = new Node<>(element, first);
+        if (index == size) {
+            add(element);
+        } else {
+            Node<E> succ = getNode(index);
+            Node<E> pred = succ.prev;
+            Node<E> newNode = new Node<>(pred, element, succ);  // 사이에 생성
+            succ.prev = newNode;
+
+            if (pred == tail) { // 맨앞에 삽입하는 경우임
                 first = newNode;
-                last.next = first; // Update last node's next
+                tail.next = first;
+            } else {
+                pred.next = newNode; // 일반적인 경우
             }
-        } else { // Add in the middle or at the end
-            Node<E> prev = getNode(index - 1);
-            Node<E> newNode = new Node<>(element, prev.next);
-            prev.next = newNode;
+            size++;
         }
-        size++;
     }
 
     @Override
@@ -81,21 +95,23 @@ public class CircularLinkedList<E> implements List<E> {
             throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + size);
         }
 
-        E removedValue;
-        if (index == 0) {
-            removedValue = first.item;
-            if (size == 1) {
-                first = null;
-            } else {
-                Node<E> last = getNode(size - 1);
-                first = first.next;
-                last.next = first;
-            }
+        Node<E> removedNode = getNode(index);
+        E removedValue = removedNode.item;
+        Node<E> pred = removedNode.prev;
+        Node<E> succ = removedNode.next;
+
+        if (size == 1) {  // 리스트 요소 1개일 때
+            first = null;
+            tail = null;
         } else {
-            Node<E> prev = getNode(index - 1);
-            Node<E> toRemove = prev.next;
-            removedValue = toRemove.item;
-            prev.next = toRemove.next;
+            pred.next = succ;
+            succ.prev = pred;
+            if (removedNode == first) {
+                first = succ;
+            }
+            if (removedNode == tail) {
+                tail = pred;
+            }
         }
         size--;
         return removedValue;
